@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>3D Photo Sphere</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  width:100vw;
+  height:100vh;
+  overflow:hidden;
+
+  background:
+    linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.75)),
+    url("background.jpg") center / 70% no-repeat,
+    #000;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  perspective:1500px;
+  font-family:sans-serif;
+}
+
+/* ===== SPHERE ===== */
+.sphere{
+  position:relative;
+  width:520px;
+  height:520px;
+  transform-style:preserve-3d;
+}
+
+/* ===== IMAGE (90%) ===== */
+.sphere img{
+  position:absolute;
+  width:117px;
+  height:117px;
+  object-fit:cover;
+  border-radius:14px;
+  cursor:pointer;
+  box-shadow:0 18px 36px rgba(0,0,0,.6);
+  transition:transform .4s, box-shadow .4s;
+}
+
+.sphere img:hover{
+  transform:scale(1.35) translateZ(90px);
+  box-shadow:0 40px 90px rgba(255,255,255,.45);
+  z-index:999;
+}
+
+/* ===== LIGHT EFFECT ===== */
+.light{
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,
+    rgba(255,255,255,.25),
+    transparent 65%);
+  pointer-events:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="sphere" id="sphere">
+  <div class="light"></div>
+</div>
+
+<script>
+const sphere = document.getElementById("sphere");
+
+const images = [
+  "images/img1.jpg",
+  "images/img2.jpg",
+  "images/img3.jpg",
+  "images/img4.jpg",
+  "images/img5.jpg",
+  "images/img6.jpg",
+  "images/img7.jpg",
+  "images/img8.jpg",
+  "images/img9.jpg",
+  "images/img10.jpg",
+  "images/img11.jpg",
+  "images/img12.jpg"
+];
+
+const radius = 280;
+const total = images.length;
+
+let rotX = 0;
+let rotY = 0;
+let velX = 0.04;
+let velY = 0.06;
+let isDragging = false;
+let lastX, lastY;
+
+/* ===== CREATE SPHERE ===== */
+images.forEach((src, i) => {
+  const img = document.createElement("img");
+  img.src = src;
+
+  const phi = Math.acos(-1 + (2 * i) / total);
+  const theta = Math.sqrt(total * Math.PI) * phi;
+
+  const x = radius * Math.cos(theta) * Math.sin(phi);
+  const y = radius * Math.sin(theta) * Math.sin(phi);
+  const z = radius * Math.cos(phi);
+
+  img.style.transform = `translate3d(${x}px, ${y}px, ${z}px)`;
+
+  img.onclick = () => window.open(src, "_blank");
+
+  sphere.appendChild(img);
+});
+
+/* ===== AUTO ROTATE ===== */
+function animate(){
+  if(!isDragging){
+    rotX += velX;
+    rotY += velY;
+  }
+  sphere.style.transform =
+    `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+  requestAnimationFrame(animate);
+}
+animate();
+
+/* ===== MOUSE CONTROL ===== */
+document.addEventListener("mousedown", e=>{
+  isDragging = true;
+  lastX = e.clientX;
+  lastY = e.clientY;
+});
+
+document.addEventListener("mousemove", e=>{
+  if(!isDragging) return;
+
+  const dx = e.clientX - lastX;
+  const dy = e.clientY - lastY;
+
+  rotY += dx * 0.35;
+  rotX -= dy * 0.35;
+
+  velY = dx * 0.02;
+  velX = dy * 0.02;
+
+  lastX = e.clientX;
+  lastY = e.clientY;
+});
+
+document.addEventListener("mouseup", ()=>{
+  isDragging = false;
+});
+</script>
+
+</body>
+</html>
